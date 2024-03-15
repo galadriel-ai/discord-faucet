@@ -1,8 +1,10 @@
 # This example requires the 'message_content' intent.
 from threading import Thread
+from typing import Optional
 
 import discord
 from discord.ext import commands
+from starlette.responses import PlainTextResponse
 
 import settings
 import uvicorn
@@ -22,14 +24,18 @@ redis_repository = RedisRepository()
 app = FastAPI()
 
 
-@app.get("/metrics")
+@app.get("/metrics", response_class=PlainTextResponse)
 async def read_root():
-    return await web3_repository.get_balance()
+    balance: Optional[int] = await web3_repository.get_balance()
+    metric_name = "sei_faucet_balance"
+    chain = "{chain=\"galadriel\"}"
+    # sei_faucet_balance{chain="galadriel"} <number>
+    return f"{metric_name}{chain} {balance or 0}"
 
 
 # Function to run the Uvicorn server
 def run_server():
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
 server_thread = Thread(target=run_server)
