@@ -28,8 +28,8 @@ app = FastAPI()
 async def read_root():
     balance: Optional[int] = await web3_repository.get_balance()
     metric_name = "sei_faucet_balance"
-    chain = "{chain=\"galadriel\"}"
-    # sei_faucet_balance{chain="galadriel"} <number>
+    chain = "{chain=\"testnet\"}"
+    # sei_faucet_balance{chain="testnet"} <number>
     return f"{metric_name}{chain} {balance or 0}"
 
 
