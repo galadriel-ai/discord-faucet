@@ -1,3 +1,5 @@
+from typing import Optional
+
 from web3 import AsyncWeb3
 
 import settings
@@ -36,3 +38,10 @@ class Web3Repository:
         except Exception as e:
             print(e, flush=True)
             return False
+
+    async def get_balance(self) -> Optional[int]:
+        try:
+            return await self.web3_client.eth.get_balance(self.account.address)
+        except Exception as e:
+            print(f"Balance check fail: {e}")
+            return None
