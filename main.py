@@ -29,7 +29,7 @@ async def read_root():
 
 # Function to run the Uvicorn server
 def run_server():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
 
 
 server_thread = Thread(target=run_server)
