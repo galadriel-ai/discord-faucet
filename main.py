@@ -27,10 +27,13 @@ app = FastAPI()
 @app.get("/metrics", response_class=PlainTextResponse)
 async def read_root():
     balance: Optional[int] = await web3_repository.get_balance()
+    formatted_balance = 0
+    if balance:
+        formatted_balance = balance / (10 ** 18)
     metric_name = "sei_faucet_balance"
     chain = "{chain=\"testnet\"}"
     # sei_faucet_balance{chain="testnet"} <number>
-    return f"{metric_name}{chain} {balance or 0}"
+    return f"{metric_name}{chain} {formatted_balance}"
 
 
 # Function to run the Uvicorn server
