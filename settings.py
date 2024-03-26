@@ -10,6 +10,7 @@ FUNDING_TIMEOUT_SECONDS = int(os.getenv("FUNDING_TIMEOUT_SECONDS", 12 * 3600))  
 
 CHAIN_ID = int(os.getenv("CHAIN_ID"))
 WEB3_RPC_URL = os.getenv("WEB3_RPC_URL")
+WEB3_DEVNET_RPC_URL = os.getenv("WEB3_DEVNET_RPC_URL")
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 
 REDIS_HOST = os.getenv("REDIS_HOST")

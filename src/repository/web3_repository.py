@@ -6,8 +6,8 @@ import settings
 
 
 class Web3Repository:
-    def __init__(self):
-        self.web3_client = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(settings.WEB3_RPC_URL))
+    def __init__(self, rpc_url: str):
+        self.web3_client = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
         self.account = self.web3_client.eth.account.from_key(settings.PRIVATE_KEY)
 
     async def send_funds(

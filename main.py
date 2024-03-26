@@ -18,22 +18,33 @@ intents.message_content = True
 
 client = commands.Bot(command_prefix="!", intents=intents)
 
-web3_repository = Web3Repository()
+web3_repository = Web3Repository(settings.WEB3_RPC_URL)
+web3_repository_devnet = Web3Repository(settings.WEB3_DEVNET_RPC_URL)
 redis_repository = RedisRepository()
 
 app = FastAPI()
 
 
+async def _get_balance_metric(network_name: str, repo: Web3Repository) -> str:
+    try:
+        balance: Optional[int] = await repo.get_balance()
+        formatted_balance = 0
+        if balance:
+            formatted_balance = balance / (10 ** 18)
+        metric_name = "sei_faucet_balance"
+        chain = "{chain=\"" + network_name + "\"}"
+        # sei_faucet_balance{chain="network_name"} <number>
+        return f"{metric_name}{chain} {formatted_balance}\n"
+    except:
+        return ""
+
+
 @app.get("/metrics", response_class=PlainTextResponse)
 async def read_root():
-    balance: Optional[int] = await web3_repository.get_balance()
-    formatted_balance = 0
-    if balance:
-        formatted_balance = balance / (10 ** 18)
-    metric_name = "sei_faucet_balance"
-    chain = "{chain=\"testnet\"}"
-    # sei_faucet_balance{chain="testnet"} <number>
-    return f"{metric_name}{chain} {formatted_balance}"
+    metrics = ""
+    metrics += await _get_balance_metric("testnet", web3_repository)
+    metrics += await _get_balance_metric("devnet", web3_repository_devnet)
+    return metrics
 
 
 # Function to run the Uvicorn server
@@ -60,6 +71,7 @@ async def faucet(ctx, address):
         ctx,
         address,
         web3_repository,
+        web3_repository_devnet,
         redis_repository,
     )
 
