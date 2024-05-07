@@ -9,16 +9,19 @@ from starlette.responses import PlainTextResponse
 import settings
 import uvicorn
 from fastapi import FastAPI
+
+from src import api_logger
 from src import handle_faucet_request
 from src.repository.redis_repository import RedisRepository
 from src.repository.web3_repository import Web3Repository
+
+logger = api_logger.get()
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = commands.Bot(command_prefix="!", intents=intents)
 
-web3_repository = Web3Repository(settings.WEB3_RPC_URL)
 web3_repository_devnet = Web3Repository(settings.WEB3_DEVNET_RPC_URL)
 redis_repository = RedisRepository()
 
@@ -42,7 +45,6 @@ async def _get_balance_metric(network_name: str, repo: Web3Repository) -> str:
 @app.get("/metrics", response_class=PlainTextResponse)
 async def read_root():
     metrics = ""
-    metrics += await _get_balance_metric("testnet", web3_repository)
     metrics += await _get_balance_metric("devnet", web3_repository_devnet)
     return metrics
 
@@ -60,17 +62,15 @@ server_thread.start()
 
 @client.event
 async def on_ready():
-    print(f"We have logged in as {client.user}")
+    logger.debug(f"We have logged in as {client.user}")
 
 
 @client.command()
 async def faucet(ctx, address):
-    # TODO: handle  sending funds to address
-    print(f"!faucet {address}")
+    logger.debug(f"!faucet {address}")
     await handle_faucet_request.execute(
         ctx,
         address,
-        web3_repository,
         web3_repository_devnet,
         redis_repository,
     )

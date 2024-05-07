@@ -4,6 +4,8 @@ services:
     ports:
       - "8000:8000"
     restart: "unless-stopped"
+    volumes:
+      - ./logs:/logs
   redis:
     image: "redis:alpine"
     ports:

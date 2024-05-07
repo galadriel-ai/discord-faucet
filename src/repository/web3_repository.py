@@ -1,8 +1,13 @@
 from typing import Optional
 
+from eth_utils import is_checksum_address
+from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
 import settings
+from src import api_logger
+
+logger = api_logger.get()
 
 
 class Web3Repository:
@@ -18,6 +23,9 @@ class Web3Repository:
         try:
             nonce = await self.web3_client.eth.get_transaction_count(self.account.address)
 
+            if not is_checksum_address(to_address):
+                logger.debug(f"Input address {to_address} is not a checksum address, trying to convert..")
+                to_address = to_checksum_address(to_address)
             signed_tx = self.web3_client.eth.account.sign_transaction(
                 {
                     "chainId": settings.CHAIN_ID,
@@ -34,14 +42,19 @@ class Web3Repository:
                 signed_tx.rawTransaction
             )
             tx_receipt = await self.web3_client.eth.wait_for_transaction_receipt(tx_hash)
-            return bool(tx_receipt.get("status"))
+            is_success = bool(tx_receipt.get("status"))
+            if is_success:
+                logger.debug(f"Successfully sent funds to {to_address}")
+            else:
+                logger.debug(f"Failed to send funds to {to_address}")
+            return is_success
         except Exception as e:
-            print(e, flush=True)
+            logger.error(e, exc_info=True)
             return False
 
     async def get_balance(self) -> Optional[int]:
         try:
             return await self.web3_client.eth.get_balance(self.account.address)
         except Exception as e:
-            print(f"Balance check fail: {e}")
+            logger.error(f"Balance check fail: {e}", exc_info=True)
             return None
